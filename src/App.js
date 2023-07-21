@@ -1,50 +1,40 @@
 import NewTask from "./components/NewTask/NewTask";
-import React, { useState, useEffect } from "react";
 import Tasks from "./components/Tasks/Tasks";
+import React, { useState, useEffect } from "react";
+import useHttp from "./components/hooks/use-http";
 
 function App() {
-  const [tasksArr, setTasksArr] = useState([])
-  const [error, setError] = useState(null);
+  const [tasksArray, setTasksArray] = useState([]);
 
-  const fetchTasks = async () => {
-    try {
-      const response = await fetch('https://custom-hooks-react-http-default-rtdb.europe-west1.firebasedatabase.app/tasks.json');
+  const applyFetchedData = (data) => {
+    let tmpTasksArray = [];
 
-      if (!response.ok) {
-          throw new Error("Request Failed")
-      }
+    for (const key in data) {
+      tmpTasksArray.push({
+        id: key,
+        text: data[key].text,
+      });
+    }
+    setTasksArray(tmpTasksArray);
+  }; // state updating functions are guaranteed to never change, therefore setTasksArray doesn't need to be set as a dependency
 
-      const responseData = await response.json()
+  const addTaskHandler = (task) => {
+    console.log(task);
+    setTasksArray((prevTasks) => prevTasks.concat(task));
+  };
 
-      let tasksArray = []
+  const { fetchHttp } = useHttp();
 
-      for (const key in responseData) {
-        tasksArray.push({
-          id: key, 
-          text: responseData[key].text
-        });
-      }
-
-      setTasksArr(tasksArray)
-  } catch (error) {
-      setError("Something went wrong!")
-  }
-  
-};
-
-useEffect(() => {
-  fetchTasks()
-}, []);
-
-const addTaskHandler = (task) => {
-  console.log(task)
-  setTasksArr((prevTasks) => prevTasks.concat(task))
-};
+  useEffect(() => { // passing the config data (url) and applyData function inside the fetchHttp method instead of the useHttp hook, means that the applyData and config data don't need to be used as dependencies because they
+    fetchHttp({     // now parameters of fetchHttp instead of external dependencies of the useHttp hook
+      url: "https://custom-hooks-react-http-default-rtdb.europe-west1.firebasedatabase.app/tasks.json",
+    }, applyFetchedData)
+  }, [fetchHttp])
 
   return (
     <div>
-      <NewTask addTasks={addTaskHandler}/>
-      <Tasks tasks={tasksArr}/>
+      <NewTask addTasks={addTaskHandler} />
+      <Tasks tasks={tasksArray} />
     </div>
   );
 }

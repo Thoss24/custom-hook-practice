@@ -8,13 +8,14 @@ const TaskForm = (props) => {
         event.preventDefault()
 
         const currentValue = taskRef.current.value
-        props.onAddTask(currentValue)
+        props.onEnterTask(currentValue)
     }
 
     return (
         <form onSubmit={addTask}>
         <label htmlFor="task"></label>
         <input type="text" id="task" ref={taskRef}/>
+        <button>ADD TASK</button>
     </form>
     )
 }
